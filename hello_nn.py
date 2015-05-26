@@ -19,14 +19,16 @@ def each_cons(xs, n):
 def flat_repeat(lst,n):
     return list(it.chain.from_iterable(it.repeat(lst,n)))
 
-in_str = list("hello hello hello hello ")
+in_str = list("hello there hello there hello there ")
 
 chars = list(set(in_str))
 char2index = {c:i for i,c in enumerate(chars)}
 index2char = {i:c for c,i in char2index.iteritems()}
 
-train_x = [[char2index[x[0]], char2index[x[1]]] for x in each_cons(in_str,3)]
-train_y = [char2index[x[2]] for x in each_cons(in_str,3)]
+seq_len = 2
+
+train_x = [[char2index[y] for y in x[:seq_len]] for x in each_cons(in_str,seq_len+1)]
+train_y = [char2index[x[seq_len]] for x in each_cons(in_str,seq_len+1)]
 
 train_x = np.array(train_x)
 train_y = np.array(train_y)
@@ -45,7 +47,7 @@ model.add(Activation('softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='adagrad')
 
-model.fit(train_x, train_y, nb_epoch=1000, batch_size=batch_size, verbose=1, show_accuracy=True, validation_split=0.1)
+model.fit(train_x, train_y, nb_epoch=5000, batch_size=batch_size, verbose=1, show_accuracy=True, validation_split=0.1)
 score = model.evaluate(test_x, test_y, batch_size=batch_size, verbose=1, show_accuracy=True)
 
 print('Test score:', score[0])
@@ -53,11 +55,11 @@ print('Test accuracy:', score[1])
 
 sample_len = 100
 out_str = ""
-seed = np.array([[char2index[x] for x in ['h','e']]])
+seed = np.array([[char2index[x] for x in ['h']]])
 
 for _ in range(0,sample_len):
     p = model.predict_classes(seed, batch_size=1, verbose=0)
     out_str += str(index2char[p[0]])
-    seed = np.array([[seed[0][-1],p[0]]])
+    seed = np.array([np.append(seed,p[0])])
 
 print(out_str)
