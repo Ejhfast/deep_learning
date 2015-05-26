@@ -25,7 +25,8 @@ chars = list(set(in_str))
 char2index = {c:i for i,c in enumerate(chars)}
 index2char = {i:c for c,i in char2index.iteritems()}
 
-seq_len = 2
+# Note: may want ALL POSSIBLE up to this length
+seq_len = 3
 
 train_x = [[char2index[y] for y in x[:seq_len]] for x in each_cons(in_str,seq_len+1)]
 train_y = [char2index[x[seq_len]] for x in each_cons(in_str,seq_len+1)]
@@ -55,11 +56,11 @@ print('Test accuracy:', score[1])
 
 sample_len = 100
 out_str = ""
-seed = np.array([[char2index[x] for x in ['h']]])
+seed = [char2index[x] for x in ['h']]
 
 for _ in range(0,sample_len):
-    p = model.predict_classes(seed, batch_size=1, verbose=0)
+    p = model.predict_classes(np.array([seed[-seq_len:]]), batch_size=1, verbose=0)
     out_str += str(index2char[p[0]])
-    seed = np.array([np.append(seed,p[0])])
+    seed.append(p[0])
 
 print(out_str)
