@@ -10,6 +10,7 @@ from keras.layers.core import Dense, Dropout, Activation, Flatten, Reshape, Time
 from keras.layers.embeddings import Embedding
 from keras.layers.recurrent import LSTM, GRU
 import itertools as it
+import sys
 
 batch_size = 10
 
@@ -21,7 +22,13 @@ def flat_repeat(lst,n):
 
 in_str = list("hello there hello there hello there ")
 
+if(len(sys.argv)>1):
+	with open (sys.argv[1], "r") as myfile:
+		in_str=list(myfile.read())
+
+
 chars = list(set(in_str))
+max_features = len(chars)
 char2index = {c:i for i,c in enumerate(chars)}
 index2char = {i:c for c,i in char2index.iteritems()}
 
@@ -36,19 +43,19 @@ train_y = np.array(train_y)
 
 test_x, test_y = train_x, train_y
 
-max_features = len(chars)
-
 test_y = np_utils.to_categorical(test_y, max_features)
 train_y = np_utils.to_categorical(train_y, max_features)
 
+embedding_size = 2
+
 model = Sequential()
-model.add(Embedding(max_features, 3))
-model.add(LSTM(3, max_features))
+model.add(Embedding(max_features, embedding_size))
+model.add(LSTM(embedding_size, max_features))
 model.add(Activation('softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='adagrad')
 
-model.fit(train_x, train_y, nb_epoch=5000, batch_size=batch_size, verbose=1, show_accuracy=True, validation_split=0.1)
+model.fit(train_x, train_y, nb_epoch=1, batch_size=batch_size, verbose=1, show_accuracy=True, validation_split=0.1)
 score = model.evaluate(test_x, test_y, batch_size=batch_size, verbose=1, show_accuracy=True)
 
 print('Test score:', score[0])
