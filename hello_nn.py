@@ -33,10 +33,12 @@ char2index = {c:i for i,c in enumerate(chars)}
 index2char = {i:c for c,i in char2index.iteritems()}
 
 # Note: may want ALL POSSIBLE up to this length
-seq_len = 3
+seq_len = 100
 
 train_x = [[char2index[y] for y in x[:seq_len]] for x in each_cons(in_str,seq_len+1)]
 train_y = [char2index[x[seq_len]] for x in each_cons(in_str,seq_len+1)]
+
+print("loaded training data")
 
 train_x = np.array(train_x)
 train_y = np.array(train_y)
@@ -46,11 +48,14 @@ test_x, test_y = train_x, train_y
 test_y = np_utils.to_categorical(test_y, max_features)
 train_y = np_utils.to_categorical(train_y, max_features)
 
-embedding_size = 2
+print("creating net")
+
+embedding_size = 100
 
 model = Sequential()
 model.add(Embedding(max_features, embedding_size))
-model.add(LSTM(embedding_size, max_features))
+model.add(LSTM(embedding_size,embedding_size,activation="tanh",return_sequences=True))
+model.add(LSTM(embedding_size,max_features,activation="tanh"))
 model.add(Activation('softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='adagrad')
@@ -63,7 +68,7 @@ print('Test accuracy:', score[1])
 
 sample_len = 100
 out_str = ""
-seed = [char2index[x] for x in ['h']]
+seed = [char2index[x] for x in ['y','o','u']]
 
 for _ in range(0,sample_len):
     p = model.predict_classes(np.array([seed[-seq_len:]]), batch_size=1, verbose=0)
